@@ -70,7 +70,7 @@ public class JdbcTutorialRepository implements TutorialRepository {
             ps.setString(1, tutorialDto.getTitle());
             ps.setString(2, tutorialDto.getDescription());
             ps.setString(3, tutorialDto.getContent());
-            ps.setString(4, tutorialDto.getStatus());
+            ps.setString(4, tutorialDto.getStatus().name());
             ps.setTimestamp(5, Timestamp.valueOf(tutorialDto.getCreatedAt()));
             ps.setTimestamp(6, Timestamp.valueOf(tutorialDto.getUpdatedAt()));
             ps.setString(7, tutorialDto.getCreatedBy());

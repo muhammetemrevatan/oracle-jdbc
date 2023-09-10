@@ -1,20 +1,19 @@
 package com.memrevatan.oraclejdbc.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -46,11 +45,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST);
-
+    public ResponseEntity<ErrorDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult()
                 .getAllErrors()
                 .stream()
@@ -58,8 +53,38 @@ public class GlobalExceptionHandler {
                 .filter(Objects::nonNull)
                 .toList();
 
-        body.put("errors", errors);
+        ErrorDto errorResponse = new ErrorDto();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.name());
+        errorResponse.setErrors(errors);
 
-        return ResponseEntity.badRequest().body(body);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorDto> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        Throwable cause = ex.getCause();
+        List<String> errorsList = new ArrayList<>();
+
+        if (cause instanceof InvalidFormatException invalidFormatException) {
+            String fieldName = invalidFormatException.getPath().isEmpty() ? "" : invalidFormatException.getPath().get(0).getFieldName();
+            String value = invalidFormatException.getValue() == null ? "null" : invalidFormatException.getValue().toString();
+
+            Class<?> targetType = invalidFormatException.getTargetType();
+            String validValues = "";
+            if (targetType.isEnum()) {
+                validValues = " Valid values are: " + Arrays.toString(targetType.getEnumConstants());
+            }
+
+            String message = String.format("Invalid value '%s' for field '%s'.%s", value, fieldName, validValues);
+            errorsList.add(message);
+        }
+
+        ErrorDto errorResponse = new ErrorDto();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.name());
+        errorResponse.setErrors(errorsList);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

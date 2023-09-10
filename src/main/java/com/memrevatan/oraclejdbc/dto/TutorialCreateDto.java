@@ -1,5 +1,6 @@
 package com.memrevatan.oraclejdbc.dto;
 
+import com.memrevatan.oraclejdbc.enums.TutorialStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,8 +21,7 @@ public class TutorialCreateDto implements Serializable {
     private String description;
     @NotBlank(message = "Content cannot be blank")
     private String content;
-    @NotBlank(message = "Status cannot be blank")
-    private String status;
+    private TutorialStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
