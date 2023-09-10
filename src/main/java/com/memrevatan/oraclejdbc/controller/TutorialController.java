@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class TutorialController {
     private final TutorialService tutorialService;
 
     @PostMapping
-    public ResponseEntity<TutorialDto> createTutorial(@RequestBody TutorialCreateDto tutorialCreateDto) {
+    public ResponseEntity<TutorialDto> createTutorial(@Valid @RequestBody TutorialCreateDto tutorialCreateDto) {
         TutorialDto tutorialDto = tutorialService.createTutorial(tutorialCreateDto);
 
         URI location = ServletUriComponentsBuilder
@@ -47,7 +48,7 @@ public class TutorialController {
     }
 
     @PutMapping("/{id}")
-    public TutorialDto updateTutorial(@PathVariable("id") Long id, @RequestBody TutorialUpdateDto tutorialUpdateDto) {
+    public TutorialDto updateTutorial(@PathVariable("id") Long id, @Valid @RequestBody TutorialUpdateDto tutorialUpdateDto) {
         return tutorialService.updateTutorial(id, tutorialUpdateDto);
     }
 

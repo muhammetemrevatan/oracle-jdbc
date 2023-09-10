@@ -3,6 +3,7 @@ package com.memrevatan.oraclejdbc.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -11,8 +12,12 @@ import java.io.Serializable;
 public class TutorialUpdateDto implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    @NotBlank(message = "Title is mandatory")
     private String title;
+    @NotBlank(message = "Description is mandatory")
     private String description;
+    @NotBlank(message = "Content is mandatory")
     private String content;
+    @NotBlank(message = "Status is mandatory")
     private String status;
 }
