@@ -1,10 +1,16 @@
 package com.memrevatan.oraclejdbc.repository.impl;
 
 import com.memrevatan.oraclejdbc.constant.ErrorConstants;
+import com.memrevatan.oraclejdbc.constant.SqlConstants;
 import com.memrevatan.oraclejdbc.dto.TutorialCreateDto;
+import com.memrevatan.oraclejdbc.dto.TutorialUpdateDto;
 import com.memrevatan.oraclejdbc.entity.Tutorial;
+import com.memrevatan.oraclejdbc.exception.TutorialNotDeletedException;
 import com.memrevatan.oraclejdbc.exception.TutorialNotSavedException;
+import com.memrevatan.oraclejdbc.exception.TutorialNotUpdatedException;
+import com.memrevatan.oraclejdbc.mapper.TutorialMapper;
 import com.memrevatan.oraclejdbc.repository.TutorialRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -14,6 +20,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -27,12 +34,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Repository
+@Slf4j
 public class JdbcTutorialRepository implements TutorialRepository {
     private final JdbcTemplate jdbcTemplate;
-
     private final ModelMapper modelMapper;
     private static final Pattern SQL_PATTERN = Pattern.compile("-- (\\w+)\\s*(.*?)\\s*;");
     private final Map<String, String> sqlQueries = new HashMap<>();
+    private RowMapper<Tutorial> tutorialRowMapper;
 
     public JdbcTutorialRepository(JdbcTemplate jdbcTemplate, ModelMapper modelMapper) {
         this.jdbcTemplate = jdbcTemplate;
@@ -41,13 +49,15 @@ public class JdbcTutorialRepository implements TutorialRepository {
 
     @PostConstruct
     public void init() throws IOException {
-        Resource resource = new ClassPathResource("sql/queries.sql");
+        Resource resource = new ClassPathResource(SqlConstants.SQL_QUERIES);
         String queriesContent = Files.readString(resource.getFile().toPath());
 
         Matcher matcher = SQL_PATTERN.matcher(queriesContent);
         while (matcher.find()) {
             sqlQueries.put(matcher.group(1), matcher.group(2));
         }
+
+        tutorialRowMapper = createRowMapper();
     }
 
     @Override
@@ -56,7 +66,7 @@ public class JdbcTutorialRepository implements TutorialRepository {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         int rowsAffected = jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sqlQueries.get("SAVE_TUTORIAL"), new String[]{"ID"});
+            PreparedStatement ps = connection.prepareStatement(sqlQueries.get(SqlConstants.SAVE_TUTORIAL), new String[]{SqlConstants.ID});
             ps.setString(1, tutorialDto.getTitle());
             ps.setString(2, tutorialDto.getDescription());
             ps.setString(3, tutorialDto.getContent());
@@ -74,7 +84,6 @@ public class JdbcTutorialRepository implements TutorialRepository {
         Tutorial tutorial = modelMapper.map(tutorialDto, Tutorial.class);
 
         Number key = keyHolder.getKey();
-
         if (key != null) {
             tutorial.setId(key.longValue());
         }
@@ -83,47 +92,81 @@ public class JdbcTutorialRepository implements TutorialRepository {
     }
 
     @Override
+    @Transactional
     public Tutorial findById(Long id) {
-        var a = "edfg";
-        RowMapper<Tutorial> rowMapper = (rs, rowNum) -> {
+        List<Tutorial> results = jdbcTemplate.query(sqlQueries.get(SqlConstants.GET_TUTORIAL), this.tutorialRowMapper, id);
+
+        Assert.notEmpty(results, ErrorConstants.TUTORIAL_NOT_FOUND_WITH_ID_ERROR + id);
+
+        return results.get(0);
+    }
+
+    @Override
+    @Transactional
+    public List<Tutorial> findAll() {
+        return jdbcTemplate.query(sqlQueries.get(SqlConstants.GET_TUTORIALS), this.tutorialRowMapper);
+    }
+
+    @Override
+    @Transactional
+    public List<Tutorial> findByTitleContaining(String title) {
+        return jdbcTemplate.query(sqlQueries.get(SqlConstants.GET_TITLE_TUTORIAL), this.tutorialRowMapper, title);
+    }
+
+    @Override
+    @Transactional
+    public Tutorial update(Long id, TutorialUpdateDto tutorialUpdateDto) {
+        Tutorial tutorial = findById(id);
+        TutorialMapper.mapNonNullValues(tutorialUpdateDto, tutorial);
+
+        int response = jdbcTemplate.update(sqlQueries.get(SqlConstants.UPDATE_TUTORIAL),
+                tutorial.getTitle(), tutorial.getDescription(), tutorial.getContent(), tutorial.getStatus(), id);
+
+        if (response != 1)
+            throw new TutorialNotUpdatedException(ErrorConstants.TUTORIAL_NOT_UPDATED_ERROR + id);
+
+        return tutorial;
+    }
+
+    @Override
+    @Transactional
+    public Tutorial deleteById(Long id) {
+        Tutorial tutorial = findById(id);
+
+        int rowsAffected = jdbcTemplate.update(sqlQueries.get(SqlConstants.DELETE_TUTORIAL), id);
+
+        if (rowsAffected != 1)
+            throw new TutorialNotDeletedException(ErrorConstants.TUTORIAL_NOT_DELETED_WITH_ID_ERROR + id);
+
+        return tutorial;
+    }
+
+    @Override
+    @Transactional
+    public List<Tutorial> deleteAll() {
+        List<Tutorial> tutorials = findAll();
+
+        int rowsAffected = jdbcTemplate.update(sqlQueries.get(SqlConstants.DELETE_TUTORIALS));
+        if (rowsAffected < 1) {
+            throw new TutorialNotDeletedException(ErrorConstants.TUTORIALS_NOT_DELETED_ERROR);
+        }
+
+        return tutorials;
+    }
+
+    private RowMapper<Tutorial> createRowMapper() {
+        return (rs, rowNum) -> {
             Tutorial tutorial = new Tutorial();
-            tutorial.setId(rs.getLong("ID"));
-            tutorial.setTitle(rs.getString("TITLE"));
-            tutorial.setDescription(rs.getString("DESCRIPTION"));
-            tutorial.setContent(rs.getString("CONTENT"));
-            tutorial.setStatus(rs.getString("STATUS"));
-            tutorial.setCreatedAt(rs.getTimestamp("CREATEDAT").toLocalDateTime());
-            tutorial.setUpdatedAt(rs.getTimestamp("UPDATEDAT").toLocalDateTime());
-            tutorial.setCreatedBy(rs.getString("CREATEDBY"));
-            tutorial.setUpdatedBy(rs.getString("UPDATEDBY"));
+            tutorial.setId(rs.getLong(SqlConstants.ID));
+            tutorial.setTitle(rs.getString(SqlConstants.TITLE));
+            tutorial.setDescription(rs.getString(SqlConstants.DESCRIPTION));
+            tutorial.setContent(rs.getString(SqlConstants.CONTENT));
+            tutorial.setStatus(rs.getString(SqlConstants.STATUS));
+            tutorial.setCreatedAt(rs.getTimestamp(SqlConstants.CREATED_AT).toLocalDateTime());
+            tutorial.setUpdatedAt(rs.getTimestamp(SqlConstants.UPDATED_AT).toLocalDateTime());
+            tutorial.setCreatedBy(rs.getString(SqlConstants.CREATED_BY));
+            tutorial.setUpdatedBy(rs.getString(SqlConstants.UPDATED_BY));
             return tutorial;
         };
-
-        return jdbcTemplate.queryForObject(sqlQueries.get("GET_TUTORIAL"), rowMapper, id);
-    }
-
-    @Override
-    public List<Tutorial> findAll() {
-        return null;
-    }
-
-    @Override
-    public List<Tutorial> findByTitleContaining(String title) {
-        return null;
-    }
-
-    @Override
-    public Tutorial update(Tutorial book) {
-        return null;
-    }
-
-    @Override
-    public Tutorial deleteById(Long id) {
-        return null;
-    }
-
-    @Override
-    public List<Tutorial> deleteAll() {
-        return null;
     }
 }

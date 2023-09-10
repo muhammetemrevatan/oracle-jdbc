@@ -1,12 +1,13 @@
 package com.memrevatan.oraclejdbc.entity;
 
 import com.memrevatan.oraclejdbc.entity.audit.BaseEntityAudit;
-import com.memrevatan.oraclejdbc.enums.TutorialStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 @Getter
 @Setter

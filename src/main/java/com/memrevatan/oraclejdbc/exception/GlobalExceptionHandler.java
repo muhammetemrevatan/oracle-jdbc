@@ -29,4 +29,10 @@ public class GlobalExceptionHandler {
         log.error(ERROR_PATTERN, "Tutorial not saved.", e.getMessage());
         return ResponseEntity.internalServerError().body("Tutorial not saved.");
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(DataAccessException e) {
+        log.error(ERROR_PATTERN, "Database transaction is failure for Tutorial.", e.getMessage());
+        return ResponseEntity.internalServerError().body("Database transaction is failure for Tutorial.");
+    }
 }

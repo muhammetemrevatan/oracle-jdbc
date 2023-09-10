@@ -1,6 +1,7 @@
 package com.memrevatan.oraclejdbc.repository;
 
 import com.memrevatan.oraclejdbc.dto.TutorialCreateDto;
+import com.memrevatan.oraclejdbc.dto.TutorialUpdateDto;
 import com.memrevatan.oraclejdbc.entity.Tutorial;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public interface TutorialRepository {
 
     List<Tutorial> findByTitleContaining(String title);
 
-    Tutorial update(Tutorial book);
+    Tutorial update(Long id, TutorialUpdateDto tutorialUpdateDto);
 
     Tutorial deleteById(Long id);
 
