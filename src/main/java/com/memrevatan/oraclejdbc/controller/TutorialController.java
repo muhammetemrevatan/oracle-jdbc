@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/tutorial")
+@RequestMapping("tutorial")
 @AllArgsConstructor
 public class TutorialController {
     private final TutorialService tutorialService;
