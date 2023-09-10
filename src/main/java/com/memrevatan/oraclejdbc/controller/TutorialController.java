@@ -5,8 +5,11 @@ import com.memrevatan.oraclejdbc.dto.TutorialDto;
 import com.memrevatan.oraclejdbc.dto.TutorialUpdateDto;
 import com.memrevatan.oraclejdbc.service.TutorialService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,8 +19,16 @@ public class TutorialController {
     private final TutorialService tutorialService;
 
     @PostMapping
-    public TutorialDto createTutorial(@RequestBody TutorialCreateDto tutorialCreateDto) {
-        return tutorialService.createTutorial(tutorialCreateDto);
+    public ResponseEntity<TutorialDto> createTutorial(@RequestBody TutorialCreateDto tutorialCreateDto) {
+        TutorialDto tutorialDto = tutorialService.createTutorial(tutorialCreateDto);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(tutorialDto.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(tutorialDto);
     }
 
     @GetMapping("/{id}")

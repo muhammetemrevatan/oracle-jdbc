@@ -1,5 +1,5 @@
 -- SAVE_TUTORIAL
-INSERT INTO tutorials (title, description, content, status, createdAt, updatedAt, createdBy, updatedBy) VALUES(?,?,?,?,?,?,?,?);
+INSERT INTO tutorials (TITLE, DESCRIPTION, CONTENT, STATUS, CREATED_AT, UPDATED_AT, CREATED_BY, UPDATED_BY) VALUES(?,?,?,?,?,?,?,?);
 
 -- GET_TUTORIAL
 SELECT * FROM tutorials WHERE id = ?;
@@ -11,7 +11,7 @@ SELECT * FROM tutorials ORDER BY ID;
 SELECT * FROM tutorials WHERE INSTR(title, ?) > 0 ORDER BY ID;
 
 -- DELETE_TUTORIAL
-DELETE FROM tutorials WHERE id = ?;
+DELETE FROM tutorials WHERE ID = ?;
 
 -- DELETE_TUTORIALS
 TRUNCATE TABLE tutorials;

@@ -26,8 +26,8 @@ public class SqlConstants {
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String CONTENT = "CONTENT";
     public static final String STATUS = "STATUS";
-    public static final String CREATED_AT = "CREATEDAT";
-    public static final String UPDATED_AT = "UPDATEDAT";
-    public static final String CREATED_BY = "CREATEDBY";
-    public static final String UPDATED_BY = "UPDATEDBY";
+    public static final String CREATED_AT = "CREATED_AT";
+    public static final String UPDATED_AT = "UPDATED_AT";
+    public static final String CREATED_BY = "CREATED_BY";
+    public static final String UPDATED_BY = "UPDATED_BY";
 }

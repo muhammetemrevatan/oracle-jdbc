@@ -146,10 +146,7 @@ public class JdbcTutorialRepository implements TutorialRepository {
     public List<Tutorial> deleteAll() {
         List<Tutorial> tutorials = findAll();
 
-        int rowsAffected = jdbcTemplate.update(sqlQueries.get(SqlConstants.DELETE_TUTORIALS));
-        if (rowsAffected < 1) {
-            throw new TutorialNotDeletedException(ErrorConstants.TUTORIALS_NOT_DELETED_ERROR);
-        }
+        jdbcTemplate.update(sqlQueries.get(SqlConstants.DELETE_TUTORIALS));
 
         return tutorials;
     }
