@@ -1,6 +1,7 @@
 package com.memrevatan.oraclejdbc.entity;
 
 import com.memrevatan.oraclejdbc.entity.audit.BaseEntityAudit;
+import com.memrevatan.oraclejdbc.enums.TutorialStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,5 +25,5 @@ public class Tutorial extends BaseEntityAudit implements Serializable {
     @Column("CONTENT")
     private String content;
     @Column("STATUS")
-    private String status;
+    private TutorialStatus status;
 }

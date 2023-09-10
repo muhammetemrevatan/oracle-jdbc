@@ -21,27 +21,28 @@ public class GlobalExceptionHandler {
     private static final String ERROR_PATTERN = "[({})]  [ErrorMessage] --> {}";
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<String> handleDataAccessException(DataAccessException e) {
+    public ResponseEntity<ErrorDto> handleDataAccessException(DataAccessException e) {
         log.error(ERROR_PATTERN, "Error occurred while accessing data.", e.getMessage());
-        return ResponseEntity.internalServerError().body("Database error occurred: " + e.getMessage());
+        List<String> errors = List.of("Error occurred while accessing data.");
+        ErrorDto errorDto = buildErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDto, HttpStatus.INTERNAL_SERVER_ERROR);
+        
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
-    public ResponseEntity<String> handleEmptyResultDataAccessException(DataAccessException e) {
-        log.error(ERROR_PATTERN, "ID is not find.", e.getMessage());
-        return ResponseEntity.internalServerError().body("ID is not find.");
+    public ResponseEntity<ErrorDto> handleEmptyResultDataAccessException(DataAccessException e) {
+        log.error(ERROR_PATTERN, "ID is not found.", e.getMessage());
+        List<String> errors = List.of("ID is not found.");
+        ErrorDto errorDto = buildErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(TutorialNotSavedException.class)
-    public ResponseEntity<String> handleTutorialNotSavedException(DataAccessException e) {
+    public ResponseEntity<ErrorDto> handleTutorialNotSavedException(TutorialNotSavedException e) {
         log.error(ERROR_PATTERN, "Tutorial not saved.", e.getMessage());
-        return ResponseEntity.internalServerError().body("Tutorial not saved.");
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(DataAccessException e) {
-        log.error(ERROR_PATTERN, "Database transaction is failure for Tutorial.", e.getMessage());
-        return ResponseEntity.internalServerError().body("Database transaction is failure for Tutorial.");
+        List<String> errors = List.of("Tutorial not saved.");
+        ErrorDto errorDto = buildErrorResponse(errors, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,10 +54,7 @@ public class GlobalExceptionHandler {
                 .filter(Objects::nonNull)
                 .toList();
 
-        ErrorDto errorResponse = new ErrorDto();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.name());
-        errorResponse.setErrors(errors);
+        ErrorDto errorResponse = buildErrorResponse(errors, HttpStatus.BAD_REQUEST);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -80,11 +78,24 @@ public class GlobalExceptionHandler {
             errorsList.add(message);
         }
 
-        ErrorDto errorResponse = new ErrorDto();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.name());
-        errorResponse.setErrors(errorsList);
+        ErrorDto errorResponse = buildErrorResponse(errorsList, HttpStatus.BAD_REQUEST);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException ex) {
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        ErrorDto errorResponse = buildErrorResponse(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private ErrorDto buildErrorResponse(List<String> errors, HttpStatus status) {
+        ErrorDto errorResponse = new ErrorDto();
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setStatus(status.name());
+        errorResponse.setErrors(errors);
+        return errorResponse;
+    }
+
 }

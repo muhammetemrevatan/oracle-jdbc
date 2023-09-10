@@ -1,5 +1,6 @@
 package com.memrevatan.oraclejdbc.dto;
 
+import com.memrevatan.oraclejdbc.enums.TutorialStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,5 @@ public class TutorialUpdateDto implements Serializable {
     private String description;
     @NotBlank(message = "Content is mandatory")
     private String content;
-    @NotBlank(message = "Status is mandatory")
-    private String status;
+    private TutorialStatus status;
 }

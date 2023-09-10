@@ -5,6 +5,7 @@ import com.memrevatan.oraclejdbc.constant.SqlConstants;
 import com.memrevatan.oraclejdbc.dto.TutorialCreateDto;
 import com.memrevatan.oraclejdbc.dto.TutorialUpdateDto;
 import com.memrevatan.oraclejdbc.entity.Tutorial;
+import com.memrevatan.oraclejdbc.enums.TutorialStatus;
 import com.memrevatan.oraclejdbc.exception.TutorialNotDeletedException;
 import com.memrevatan.oraclejdbc.exception.TutorialNotSavedException;
 import com.memrevatan.oraclejdbc.exception.TutorialNotUpdatedException;
@@ -158,7 +159,7 @@ public class JdbcTutorialRepository implements TutorialRepository {
             tutorial.setTitle(rs.getString(SqlConstants.TITLE));
             tutorial.setDescription(rs.getString(SqlConstants.DESCRIPTION));
             tutorial.setContent(rs.getString(SqlConstants.CONTENT));
-            tutorial.setStatus(rs.getString(SqlConstants.STATUS));
+            tutorial.setStatus(TutorialStatus.valueOf(rs.getString(SqlConstants.STATUS)));
             tutorial.setCreatedAt(rs.getTimestamp(SqlConstants.CREATED_AT).toLocalDateTime());
             tutorial.setUpdatedAt(rs.getTimestamp(SqlConstants.UPDATED_AT).toLocalDateTime());
             tutorial.setCreatedBy(rs.getString(SqlConstants.CREATED_BY));
