@@ -1,3 +1,28 @@
+---
+# Project Basic Information
+title: "Advanced Oracle JDBC Application"
+description: "Enterprise-grade Spring Boot application for Oracle DB operations with JDBC, featuring comprehensive REST APIs and robust error handling"
+showcase: true
+order: 2
+
+# Technologies
+technologies:
+  - "Java 17"
+  - "Spring Boot"
+  - "Oracle DB"
+  - "JDBC"
+  - "REST API"
+  - "Model Mapper"
+
+# Features
+features:
+  - "Custom Exception Handling"
+  - "Data Validation"
+  - "REST API Implementation"
+  - "Database Operations Management"
+  - "Enterprise Architecture"
+---
+
 # Advanced Web Application with Oracle JDBC and Spring Boot
 
 This repository houses an advanced web application project that leverages the Spring Boot framework to establish connectivity with Oracle DB. It facilitates the management of database operations through JDBC. The project is equipped with REST API functionalities, a custom exception handler, and validation features.
