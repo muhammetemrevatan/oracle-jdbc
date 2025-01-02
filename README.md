@@ -3,7 +3,7 @@
 title: "Advanced Oracle JDBC Application"
 description: "Enterprise-grade Spring Boot application for Oracle DB operations with JDBC, featuring comprehensive REST APIs and robust error handling"
 showcase: true
-order: 2
+order: 6
 
 # Technologies
 technologies:
